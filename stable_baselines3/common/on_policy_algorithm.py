@@ -56,6 +56,8 @@ class OnPolicyAlgorithm(BaseAlgorithm):
         learning_rate: Union[float, Schedule],
         n_steps: int,
         gamma: float,
+        alpha: Optional[float],
+        beta: Optional[float],
         gae_lambda: float,
         ent_coef: float,
         vf_coef: float,
@@ -92,6 +94,8 @@ class OnPolicyAlgorithm(BaseAlgorithm):
 
         self.n_steps = n_steps
         self.gamma = gamma
+        self.alpha = alpha
+        self.beta = beta
         self.gae_lambda = gae_lambda
         self.ent_coef = ent_coef
         self.vf_coef = vf_coef
@@ -113,6 +117,8 @@ class OnPolicyAlgorithm(BaseAlgorithm):
             gamma=self.gamma,
             gae_lambda=self.gae_lambda,
             n_envs=self.n_envs,
+            alpha=self.alpha,
+            beta=self.beta
         )
         self.policy = self.policy_class(
             self.observation_space,

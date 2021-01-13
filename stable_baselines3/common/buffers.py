@@ -15,6 +15,7 @@ except ImportError:
 from stable_baselines3.common.preprocessing import get_action_dim, get_obs_shape
 from stable_baselines3.common.type_aliases import ReplayBufferSamples, RolloutBufferSamples
 from stable_baselines3.common.vec_env import VecNormalize
+from stable_baselines3.common.beta_discount import beta_gae
 
 
 class BaseBuffer(ABC):
@@ -288,11 +289,15 @@ class RolloutBuffer(BaseBuffer):
         gae_lambda: float = 1,
         gamma: float = 0.99,
         n_envs: int = 1,
+        alpha: Optional[float] = 99.,
+        beta: Optional[float] = 1.
     ):
 
         super(RolloutBuffer, self).__init__(buffer_size, observation_space, action_space, device, n_envs=n_envs)
         self.gae_lambda = gae_lambda
         self.gamma = gamma
+        self.alpha = alpha
+        self.beta = beta
         self.observations, self.actions, self.rewards, self.advantages = None, None, None, None
         self.returns, self.dones, self.values, self.log_probs = None, None, None, None
         self.generator_ready = False
@@ -325,21 +330,33 @@ class RolloutBuffer(BaseBuffer):
         :param dones:
 
         """
+
         # convert to numpy
         last_values = last_values.clone().cpu().numpy().flatten()
-
-        last_gae_lam = 0
-        for step in reversed(range(self.buffer_size)):
-            if step == self.buffer_size - 1:
-                next_non_terminal = 1.0 - dones
-                next_values = last_values
-            else:
-                next_non_terminal = 1.0 - self.dones[step + 1]
-                next_values = self.values[step + 1]
-            delta = self.rewards[step] + self.gamma * next_values * next_non_terminal - self.values[step]
-            last_gae_lam = delta + self.gamma * self.gae_lambda * next_non_terminal * last_gae_lam
-            self.advantages[step] = last_gae_lam
-        self.returns = self.advantages + self.values
+        if self.alpha and self.beta:
+            self.returns, self.advantages = beta_gae(
+                self.rewards,
+                self.values,
+                last_values,
+                self.dones,
+                dones,
+                self.alpha,
+                self.beta,
+                self.gae_lambda
+            )
+        else:
+            last_gae_lam = 0
+            for step in reversed(range(self.buffer_size)):
+                if step == self.buffer_size - 1:
+                    next_non_terminal = 1.0 - dones
+                    next_values = last_values
+                else:
+                    next_non_terminal = 1.0 - self.dones[step + 1]
+                    next_values = self.values[step + 1]
+                delta = self.rewards[step] + self.gamma * next_values * next_non_terminal - self.values[step]
+                last_gae_lam = delta + self.gamma * self.gae_lambda * next_non_terminal * last_gae_lam
+                self.advantages[step] = last_gae_lam
+            self.returns = self.advantages + self.values
 
     def add(
         self, obs: np.ndarray, action: np.ndarray, reward: np.ndarray, done: np.ndarray, value: th.Tensor, log_prob: th.Tensor
