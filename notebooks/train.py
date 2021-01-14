@@ -9,14 +9,14 @@ from stable_baselines3.common.cmd_util import make_vec_env
 from stable_baselines3.common.vec_env import VecNormalize
 
 
-env = make_vec_env("HopperBulletEnv-v0", n_envs=16, wrapper_class=TimeFeatureWrapper)
+env = make_vec_env("HopperBulletEnv-v0", n_envs=8, wrapper_class=TimeFeatureWrapper)
 
 env = VecNormalize(env, norm_obs=True, norm_reward=True, clip_obs=10., )
 
 model = PPO('MlpPolicy', env, verbose=1, tensorboard_log="hopper_ppo",
             batch_size=128,
             n_steps=512,
-            gamma=0.99, gae_lambda=0.9,  # alpha=99*2., beta=1*2.)
+            gamma=0.99, gae_lambda=0.92, alpha=99*2., beta=1*2.,
             n_epochs=20,
             ent_coef=0.0,
             sde_sample_freq=4,
