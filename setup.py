@@ -82,6 +82,11 @@ setup(
         "pandas",
         # Plotting learning curves
         "matplotlib",
+        "seaborn",
+        "tqdm",
+        "numba",
+        "scipy",
+        "pyyaml"
     ],
     extras_require={
         "tests": [
@@ -112,7 +117,8 @@ setup(
             # For render
             "opencv-python",
             # For atari games,
-            "atari_py~=0.2.0",
+            # "atari_py~=0.2.0",
+            "pybullet",
             "pillow",
             # Tensorboard support
             "tensorboard>=2.2.0",
