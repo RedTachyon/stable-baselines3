@@ -1,5 +1,26 @@
 import numpy as np
 from numba import njit
+from typing import Tuple
+
+
+def convert_params(mu: float, eta: float) -> Tuple[float, float]:
+    """
+    Convert the mu-eta parametrization to alpha-beta
+    """
+    alpha = mu / (eta * (mu - 1))
+    beta = 1./eta
+
+    return alpha, beta
+
+
+def heuritic_params(mu: float) -> Tuple[float, float]:
+    p = (1 - mu) / mu
+    sigma = 1 - mu
+
+    a = (p - sigma ** 2) / sigma ** 2
+    b = p * a
+
+    return 2 * a, 2 * b
 
 
 @njit
