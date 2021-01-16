@@ -89,7 +89,7 @@ def run_experiment(i: int,  # index
         param_string = f"{gamma:.3f}g"
     exp_name = f"ppo_{'beta' if eta else 'exp'}_{param_string}"
 
-    print(f"Running experiment {i}/{total}: {exp_name}")
+    print(f"Experiment {i}/{total}: {exp_name}")
     model = PPO('MlpPolicy', env, verbose=0, tensorboard_log=dir_name,
                 batch_size=128,
                 n_steps=512,
