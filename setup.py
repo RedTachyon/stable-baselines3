@@ -86,7 +86,8 @@ setup(
         "tqdm",
         "numba",
         "scipy",
-        "pyyaml"
+        "pyyaml",
+        "typarse",
     ],
     extras_require={
         "tests": [
