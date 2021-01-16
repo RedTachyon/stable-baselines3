@@ -62,9 +62,6 @@ def run_experiment(i: int,  # index
                    eta: Optional[float] = None,  # eta = 1/beta
                    dir_name: str = "hopper_ppo",  # TB directory
                    use_heuristic: bool = False):  # use beta discount
-    env = make_vec_env("HopperBulletEnv-v0", n_envs=16, wrapper_class=TimeFeatureWrapper)
-
-    env = VecNormalize(env, norm_obs=True, norm_reward=True, clip_obs=10.)
 
     if eta:
         alpha, beta = convert_params(gamma, eta)
@@ -87,9 +84,16 @@ def run_experiment(i: int,  # index
             "gamma": gamma
         }
         param_string = f"{gamma:.3f}g"
+
     exp_name = f"ppo_{'beta' if eta else 'exp'}_{param_string}"
 
     print(f"Experiment {i}/{total}: {exp_name}")
+
+    env = make_vec_env("HopperBulletEnv-v0", n_envs=16, wrapper_class=TimeFeatureWrapper)
+
+    env = VecNormalize(env, norm_obs=True, norm_reward=True, clip_obs=10.)
+
+
     model = PPO('MlpPolicy', env, verbose=0, tensorboard_log=dir_name,
                 batch_size=128,
                 n_steps=512,
