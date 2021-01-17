@@ -130,7 +130,7 @@ if __name__ == '__main__':
 
         gammas = np.linspace(g_min, g_max, g_num)
     else:
-        gammas = args.gammas
+        gammas = np.array(args.gammas)
 
     if args.eta_range:
         e_min, e_max, e_num = args.etas
@@ -138,7 +138,7 @@ if __name__ == '__main__':
 
         etas = np.linspace(e_min, e_max, e_num)
     else:
-        etas = args.etas
+        etas = np.array(args.etas)
 
     if etas is None:
         etas = [None]
