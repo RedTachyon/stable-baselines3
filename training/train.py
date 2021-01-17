@@ -140,7 +140,7 @@ if __name__ == '__main__':
     else:
         etas = np.array(args.etas)
 
-    if etas is None:
+    if etas == None:
         etas = [None]
     elif args.eta_invert:
         etas = 1./etas
