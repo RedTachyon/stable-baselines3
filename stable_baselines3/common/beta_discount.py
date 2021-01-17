@@ -7,7 +7,7 @@ def convert_params(mu: float, eta: float) -> Tuple[float, float]:
     """
     Convert the mu-eta parametrization to alpha-beta
     """
-    alpha = mu / (eta * (mu - 1))
+    alpha = mu / (eta * (1 - mu))
     beta = 1./eta
 
     return alpha, beta
