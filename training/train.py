@@ -12,6 +12,8 @@ import numpy as np
 import multiprocessing as mp
 import time
 
+mp.set_start_method('spawn')
+
 
 class Parser(BaseParser):
     directory: Optional[str]
