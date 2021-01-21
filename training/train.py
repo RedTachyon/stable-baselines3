@@ -12,8 +12,7 @@ import numpy as np
 import multiprocessing as mp
 import time
 
-mp.set_start_method('spawn')
-
+from tqdm import tqdm
 
 class Parser(BaseParser):
     directory: Optional[str]
@@ -58,12 +57,14 @@ class Parser(BaseParser):
     }
 
 
-def run_experiment(i: int,  # index
-                   total: int,
-                   gamma: float,  # gamma or mu
-                   eta: Optional[float] = None,  # eta = 1/beta
-                   dir_name: str = "hopper_ppo",  # TB directory
-                   use_heuristic: bool = False):  # use beta discount
+def run_experiment(args):  # use beta discount
+    i: int
+    gamma: float
+    eta: Optional[float]  # eta = 1/beta
+    dir_name: str  # TB directory
+    use_heuristic: bool  # use beta discount
+
+    i, gamma, eta, dir_name, use_heuristic = args
 
     if eta:
         alpha, beta = convert_params(gamma, eta)
@@ -88,8 +89,8 @@ def run_experiment(i: int,  # index
         param_string = f"{gamma:.3f}g"
 
     exp_name = f"ppo_{'beta' if eta else 'exp'}_{param_string}"
-
-    print(f"Experiment {i}/{total}: {exp_name}")
+    time.sleep(1)
+    # print(f"\b\r \rExperiment {i}/{total}: {exp_name}")
 
     env = make_vec_env("HopperBulletEnv-v0", n_envs=16, wrapper_class=TimeFeatureWrapper)
 
@@ -116,6 +117,7 @@ def run_experiment(i: int,  # index
                                    ))
 
     model.learn(total_timesteps=int(2e6), tb_log_name=exp_name)
+    return i, exp_name
 
 
 def dummy_task(*args):
@@ -124,6 +126,8 @@ def dummy_task(*args):
 
 
 if __name__ == '__main__':
+    # mp.set_start_method('spawn')
+
     args = Parser()
 
     if args.gamma_range:
@@ -139,12 +143,12 @@ if __name__ == '__main__':
         e_num = round(e_num)  # int
 
         etas = np.linspace(e_min, e_max, e_num)
-    else:
+    elif args.etas:
         etas = np.array(args.etas)
-
-    if etas == None:
+    else:
         etas = [None]
-    elif args.eta_invert:
+
+    if etas[0] is not None and args.eta_invert:
         etas = 1./etas
 
     workers = args.num_workers
@@ -155,12 +159,15 @@ if __name__ == '__main__':
         for gamma in gammas
         for eta in etas
     ]
-    args = [(i, len(args), *arg) for i, arg in enumerate(args)]
+    args = [(i, *arg) for i, arg in enumerate(args)]
 
     print(f"Gamma values: {gammas}")
     print(f"Eta values: {etas}")
 
     print(f"Running {len(args)} experiments on {workers} workers")
 
-    with mp.Pool(workers) as pool:
-        pool.starmap(run_experiment, args)
+    with mp.get_context("spawn").Pool(workers) as pool:
+        with tqdm(total=len(args), desc="Starting training") as pbar:
+            for j, (i, exp_name) in enumerate(pool.imap(run_experiment, args)):
+                pbar.set_description(desc=f"Last started: {exp_name}")
+                pbar.update()
