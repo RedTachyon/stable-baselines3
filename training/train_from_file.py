@@ -11,15 +11,16 @@ from typing import List, Optional
 import numpy as np
 import multiprocessing as mp
 import time
+import yaml
 
 from tqdm import tqdm
 
 class Parser(BaseParser):
     directory: Optional[str]
-    num_experiments: int
     num_workers: int
-    gammas: List[float]
-    etas: Optional[List[float]]
+
+    config: str
+    config_name: str
 
     beta: bool
     gamma_range: bool
@@ -28,28 +29,19 @@ class Parser(BaseParser):
 
     _abbrev = {
         "directory": "d",
-        "num_experiments": "n",
         "num_workers": "w",
-        "gammas": "g",
-        "etas": "e",
-        "beta": "b",
-        "gamma_range": "gr",
-        "eta_range": "er",
-        "eta_invert": "ei"
+        "eta_invert": "ei",
+        "config": "c",
+        "config_name": "cn",
     }
 
     _default = {
         "directory": "hopper_ppo",
-        "num_experiments": 5,
         "num_workers": 5,
     }
 
     _help = {
         "directory": "Directory of the tensorboard logs",
-        "num_experiments": "How many random seeds to run",
-        "gammas": "Values of gamma (or mu) to test",
-        "etas": "If in beta mode, values of eta (1/beta) to test",
-        "beta": "Whether to use beta-weighted discounting. In absence of eta values, the heuristic will be used",
         "gamma_range": "Whether the gamma values should be interpreted as in np.linspace(start, end, num)",
         "eta_range": "See gamma_range",
         "eta_invert": "Whether each value of eta should be inverted - this is used to do a gridsearch on"
@@ -133,42 +125,23 @@ if __name__ == '__main__':
     # mp.set_start_method('spawn')
 
     args = Parser()
-
-    if args.gamma_range:
-        g_min, g_max, g_num = args.gammas
-        g_num = round(g_num)  # int
-
-        gammas = np.linspace(g_min, g_max, g_num)
-    else:
-        gammas = np.array(args.gammas)
-
-    if args.eta_range:
-        e_min, e_max, e_num = args.etas
-        e_num = round(e_num)  # int
-
-        etas = np.linspace(e_min, e_max, e_num)
-    elif args.etas:
-        etas = np.array(args.etas)
-    else:
-        etas = [None]
-
-    if etas[0] is not None and args.eta_invert:
-        etas = 1./etas
-
     workers = args.num_workers
+
+    with open(args.config, "r") as f:
+        config = yaml.load(f)
+
+    params = config[args.config_name]
+    if args.eta_invert:
+        params = [(gamma, 1./eta) for gamma, eta in params]
 
     args = [
         (gamma, eta, args.directory, args.beta, args.eta_invert)
-        for _ in range(args.num_experiments)
-        for gamma in gammas
-        for eta in etas
+        for gamma, eta in params
     ]
+
     args = [(i, *arg) for i, arg in enumerate(args)]
 
-    print(f"Gamma values: {gammas}")
-    print(f"Eta values: {etas}")
-
-    print(f"Running {len(args)} experiments on {workers} workers")
+    print(f"Running {len(args)} experiments on {workers} workers from a file")
 
     with mp.get_context("spawn").Pool(workers) as pool:
         with tqdm(total=len(args), desc="Starting training") as pbar:
