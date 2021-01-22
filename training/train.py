@@ -73,7 +73,7 @@ def run_experiment(args):  # use beta discount
             "alpha": alpha,
             "beta": beta,
         }
-        param_string = f"{gamma:.3f}mu_{round(beta)}beta"
+        param_string = f"{gamma:.3f}mu_{1./beta:.3f}eta"
     elif use_heuristic:
         alpha, beta = heuritic_params(gamma)
         params = {
@@ -89,9 +89,9 @@ def run_experiment(args):  # use beta discount
         param_string = f"{gamma:.3f}g"
 
     exp_name = f"ppo_{'beta' if eta else 'exp'}_{param_string}"
-    time.sleep(1)
-    # print(f"\b\r \rExperiment {i}/{total}: {exp_name}")
-
+    # time.sleep(1)
+    # print(f"\b\r \rExperiment {i}: {exp_name}")
+    # return i, exp_name
     env = make_vec_env("HopperBulletEnv-v0", n_envs=16, wrapper_class=TimeFeatureWrapper)
 
     env = VecNormalize(env, norm_obs=True, norm_reward=True, clip_obs=10.)
