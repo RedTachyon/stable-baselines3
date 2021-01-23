@@ -145,6 +145,6 @@ if __name__ == '__main__':
 
     with mp.get_context("spawn").Pool(workers) as pool:
         with tqdm(total=len(args), desc="Starting training") as pbar:
-            for j, (i, exp_name) in enumerate(pool.imap(run_experiment, args)):
+            for j, (i, exp_name) in enumerate(pool.imap_unordered(run_experiment, args)):
                 pbar.set_description(desc=f"Last started: {exp_name}")
                 pbar.update()
