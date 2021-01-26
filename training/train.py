@@ -75,7 +75,7 @@ def run_experiment(args):  # use beta discount
             "beta": beta,
         }
         if eta_invert:
-            param_string = f"{gamma:.3f}mu_{beta:.3f}beta"
+            param_string = f"{gamma:.3f}mu_{round(beta)}beta"
         else:
             param_string = f"{gamma:.3f}mu_{eta:.3f}eta"
     elif use_heuristic:
