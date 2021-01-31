@@ -1,7 +1,6 @@
 eval "$(conda shell.bash hook)"
 conda activate beta
-CUDA_VISIBLE_DEVICES=1 python -W ignore train.py -n 5 -w 5 -g 0.970 -e 11 20 10 -er -ei
-CUDA_VISIBLE_DEVICES=1 python -W ignore train.py -n 5 -w 5 -g 0.971 -e 11 20 10 -er -ei
-CUDA_VISIBLE_DEVICES=1 python -W ignore train.py -n 5 -w 5 -g 0.972 -e 11 20 10 -er -ei
-CUDA_VISIBLE_DEVICES=1 python -W ignore train.py -n 5 -w 5 -g 0.973 -e 11 20 10 -er -ei
-CUDA_VISIBLE_DEVICES=1 python -W ignore train.py -n 5 -w 5 -g 0.974 -e 11 20 10 -er -ei
+CUDA_VISIBLE_DEVICES=1 python -W ignore train.py -n 5 -w 5 -g 0.971 0.999 15 -e 1.0
+CUDA_VISIBLE_DEVICES=1 python -W ignore train.py -n 5 -w 5 -g 0.971 0.999 15 -e 1.0
+CUDA_VISIBLE_DEVICES=1 python -W ignore train.py -n 5 -w 5 -g 0.971 0.999 15 -e 1.0
+CUDA_VISIBLE_DEVICES=1 python -W ignore train.py -n 5 -w 5 -g 0.971 0.999 15 -e 1.0
